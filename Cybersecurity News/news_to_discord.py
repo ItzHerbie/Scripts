@@ -8,7 +8,7 @@ SOURCES       = 'hacker-news,techcrunch,wired'
 KEYWORDS      = [
     "zero-day", "vulnerability", "exploit", "ransomware",
     "government breach", "data breach", "cyberattack",
-    "critical infrastructure", "nation state"
+    "critical infrastructure", "nation state", "hackers"
 ]
 
 def post_to_discord(article):
