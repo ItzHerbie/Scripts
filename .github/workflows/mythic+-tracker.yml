@@ -31,4 +31,4 @@ jobs:
           DISCORD_ROLE_ID: ${{ secrets.DISCORD_ROLE_ID_OFFICER }}
         run: |
           echo "$GOOGLE_CREDS_JSON" > creds.json
-          python mythic+_tracker.py
+          python "WowAudit/mythic+_tracker.py"
