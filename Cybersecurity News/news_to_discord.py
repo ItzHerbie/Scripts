@@ -22,29 +22,33 @@ def post_to_discord(article):
 
 def fetch_and_post():
     now   = datetime.datetime.now(datetime.timezone.utc)
-    start = now - datetime.timedelta(minutes=40)
+    start = now - datetime.timedelta(minutes=45)  # safe buffer
     from_date = start.isoformat()
     to_date   = now.isoformat()
 
     url = 'https://newsapi.org/v2/everything'
     found = []
 
-    for kw in KEYWORDS:
-        params = {
-            'apiKey': API_KEY,
-            'sources': SOURCES,
-            'qInTitle': kw,
-            'from': from_date,
-            'to': to_date,
-            'sortBy': 'publishedAt',
-            'language': 'en',
-            'pageSize': 20
-        }
-        r = requests.get(url, params=params)
-        r.raise_for_status()
-        for art in r.json().get('articles', []):
-            if kw.lower() in art['title'].lower():
+    params = {
+        'apiKey': API_KEY,
+        'sources': SOURCES,
+        'from': from_date,
+        'to': to_date,
+        'sortBy': 'publishedAt',
+        'language': 'en',
+        'pageSize': 100  # get more articles to filter manually
+    }
+
+    r = requests.get(url, params=params)
+    r.raise_for_status()
+
+    articles = r.json().get('articles', [])
+    for art in articles:
+        title_lower = art['title'].lower()
+        for kw in KEYWORDS:
+            if kw.lower() in title_lower:
                 found.append(art)
+                break  # stop checking other keywords for this article
 
     # dedupe by URL
     seen = set()
