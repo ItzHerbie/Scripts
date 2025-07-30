@@ -22,7 +22,7 @@ def post_to_discord(article):
 
 def fetch_and_post():
     now   = datetime.datetime.now(datetime.timezone.utc)
-    start = now - datetime.timedelta(minutes=45)  # safe buffer
+    start = now - datetime.timedelta(hours=5)  # safe buffer
     from_date = start.isoformat()
     to_date   = now.isoformat()
 
