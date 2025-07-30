@@ -25,4 +25,4 @@ jobs:
         env:
           NEWSAPI_KEY:       ${{ secrets.NEWSAPI_KEY }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        run: python "Scrips/Cybersecurity News/news_to_discord.py"
+        run: python "Cybersecurity News/news_to_discord.py"
