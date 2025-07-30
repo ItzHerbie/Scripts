@@ -36,19 +36,24 @@ def fetch_and_post():
         'to': to_date,
         'sortBy': 'publishedAt',
         'language': 'en',
-        'pageSize': 100  # get more articles to filter manually
+        'pageSize': 100  # Max allowed per request
     }
 
-    r = requests.get(url, params=params)
-    r.raise_for_status()
+    try:
+        r = requests.get(url, params=params)
+        r.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Error fetching articles: {e}")
+        return
 
     articles = r.json().get('articles', [])
+    print(f"Fetched {len(articles)} articles.")
+
     for art in articles:
         title_lower = art['title'].lower()
-        for kw in KEYWORDS:
-            if kw.lower() in title_lower:
-                found.append(art)
-                break  # stop checking other keywords for this article
+        if any(kw.lower() in title_lower for kw in KEYWORDS):
+            print(f"✅ Matched keyword in: {art['title']}")
+            found.append(art)
 
     # dedupe by URL
     seen = set()
