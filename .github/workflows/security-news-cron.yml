@@ -3,7 +3,7 @@ name: “Fetch Security News”
 on:
   schedule:
     # every 20 minutes
-    - cron:  '*/20 * * * *'
+    - cron: '0 13 * * *'  # 13:00 UTC = 7:00 AM CST
   workflow_dispatch:  # manual trigger
 
 jobs:
