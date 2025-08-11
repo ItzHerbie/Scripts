@@ -23,10 +23,9 @@ data = data[1:]  # Skip header row
 
 # --- GROUP BUCKETS ---
 group_0 = []
-group_1_5 = []
-group_6_10 = []
-group_11_15 = []
-group_16_plus = []
+group_1_4 = []
+group_5_7 = []
+group_8_plus = []
 
 # --- BUILD ENTRIES ---
 for idx, row in enumerate(data, start=2):  # Row 2 = first data row
@@ -46,27 +45,23 @@ for idx, row in enumerate(data, start=2):  # Row 2 = first data row
     if this_week == 0:
         group_0.append(f"⚠️ {entry}")
     elif this_week <= 5:
-        group_1_5.append(f"🟡 {entry}")
+        group_1_4.append(f"🟡 {entry}")
     elif this_week <= 10:
-        group_6_10.append(f"🟢 {entry}")
-    elif this_week <= 15:
-        group_11_15.append(f"🔵 {entry}")
+        group_5_7.append(f"🟢 {entry}")
     else:
-        group_16_plus.append(f"🏆 {entry}")
+        group_8_plus.append(f"🏆 {entry}")
 
 # --- BUILD MESSAGE CONTENT ---
 sections = []
 
 if group_0:
     sections.append("**⚠️ Players with 0 runs:**\n" + "\n".join(group_0))
-if group_1_5:
-    sections.append("**🟡 Players with 1–5 runs:**\n" + "\n".join(group_1_5))
-if group_6_10:
-    sections.append("**🟢 Players with 6–10 runs:**\n" + "\n".join(group_6_10))
-if group_11_15:
-    sections.append("**🔵 Players with 11–15 runs:**\n" + "\n".join(group_11_15))
-if group_16_plus:
-    sections.append("**🏆 Players with 16+ runs:**\n" + "\n".join(group_16_plus))
+if group_1_4:
+    sections.append("**🟡 Players with 1–4 runs:**\n" + "\n".join(group_1_5))
+if group_5_7:
+    sections.append("**🟢 Players with 5–7 runs:**\n" + "\n".join(group_6_10))
+if group_8_plus:
+    sections.append("**🏆 Players with 8+ runs:**\n" + "\n".join(group_16_plus))
 
 full_message = "\n\n".join(sections) if sections else "No valid player data found."
 
