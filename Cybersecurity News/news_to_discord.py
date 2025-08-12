@@ -4,7 +4,7 @@ import datetime
 
 API_KEY       = os.getenv('NEWSAPI_KEY')
 WEBHOOK_URL   = os.getenv('DISCORD_WEBHOOK_URL')
-SOURCES       = 'hacker-news,techcrunch,wired'
+SOURCES       = 'techcrunch,wired'
 KEYWORDS      = [
     "zero-day", "vulnerability", "exploit", "ransomware",
     "government breach", "data breach", "cyberattack",
