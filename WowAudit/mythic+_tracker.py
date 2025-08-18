@@ -15,76 +15,67 @@ CREDS_FILE = os.environ["GOOGLE_CREDS_JSON"]
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 creds = ServiceAccountCredentials.from_json_keyfile_name(CREDS_FILE, scope)
 client = gspread.authorize(creds)
-sheet = client.open_by_key(GOOGLE_SHEET_KEY).worksheet("Overview")
 
-# --- READ PLAYER DATA ---
-data = sheet.get_all_values()
-data = data[1:]  # Skip header row
+# Open the sheet by key and go to the "Mythic+ Done" tab
+sheet = client.open_by_key(GOOGLE_SHEET_KEY).worksheet("Mythic+ Done")
 
-# --- GROUP BUCKETS ---
-group_0 = []
-group_1_4 = []
-group_5_7 = []
-group_8_plus = []
+# --- FETCH DATA (RAW VALUES) ---
+raw_data = sheet.get_all_values()
 
-# --- BUILD ENTRIES ---
-for idx, row in enumerate(data, start=2):  # Row 2 = first data row
+# Column mapping: A=0, I=8, J=9
+rows = raw_data[1:]  # skip header row
+
+report_lines = []
+for row in rows:
+    if len(row) < 10:  # skip empty / incomplete rows
+        continue
+
+    character = row[0].strip()              # Column A = Character
     try:
-        name = row[0].strip()  # Column A = index 0
-        this_week_raw = row[70] if len(row) > 70 else ""
-        this_week = int(this_week_raw) if this_week_raw.strip().isdigit() else 0
-    except Exception as e:
-        print(f"Skipping row {idx} due to error: {e}")
+        dungeons_done = int(row[8])         # Column I = This Week
+    except ValueError:
+        dungeons_done = 0
+    highest_key = row[9]                    # Column J = Highest This Week
+
+    if not character or character.lower().startswith("refreshed"):
         continue
 
-    if not name:
-        continue
+    warning = " ⚠️ **Less than 8 runs this week!**" if dungeons_done < 8 else ""
+    line = f"**{character}** → {dungeons_done} runs | Highest key: {highest_key}{warning}"
+    report_lines.append(line)
 
-    entry = f"{name} ({this_week} dungeons)"
+# --- HEADER MESSAGE ---
+role_tag = f"<@&{DISCORD_ROLE_ID}>" if DISCORD_ROLE_ID else ""
+header_message = (
+    f"{role_tag}\n"
+    "Good evening and happy Sunday all! Here are the current Mythic+ standings for this week. "
+    "You still have one day left to complete your runs and fill your Mythic+ vault slots before the weekly reset. "
+    "For core raiders, this is a required task. Please make sure it’s completed, "
+    "and don’t hesitate to reach out if you need assistance."
+)
 
-    if this_week == 0:
-        group_0.append(f"⚠️ {entry}")
-    elif this_week <= 5:
-        group_1_4.append(f"🟡 {entry}")
-    elif this_week <= 10:
-        group_5_7.append(f"🟢 {entry}")
-    else:
-        group_8_plus.append(f"🏆 {entry}")
-
-# --- BUILD MESSAGE CONTENT ---
-sections = []
-
-if group_0:
-    sections.append("**⚠️ Players with 0 runs:**\n" + "\n".join(group_0))
-if group_1_4:
-    sections.append("**🟡 Players with 1–4 runs:**\n" + "\n".join(group_1_5))
-if group_5_7:
-    sections.append("**🟢 Players with 5–7 runs:**\n" + "\n".join(group_6_10))
-if group_8_plus:
-    sections.append("**🏆 Players with 8+ runs:**\n" + "\n".join(group_16_plus))
-
-full_message = "\n\n".join(sections) if sections else "No valid player data found."
+# --- EMBED ---
+embed = {
+    "title": "Mythic+ Weekly Report",
+    "description": "\n".join(report_lines),
+    "color": 3447003  # blue (you can change this)
+}
 
 # --- SEND TO DISCORD ---
-def send_to_discord(content, mention_role=False):
-    if not content.strip():
-        return
+if DISCORD_WEBHOOK_URL:
+    # send header message
+    requests.post(DISCORD_WEBHOOK_URL, json={"content": header_message})
 
-    payload = {
-        "content": f"<@&{DISCORD_ROLE_ID}>\n{content}" if mention_role else content,
-        "allowed_mentions": {
-            "parse": [],
-            "roles": [DISCORD_ROLE_ID] if mention_role else []
-        }
-    }
-
-    response = requests.post(DISCORD_WEBHOOK_URL, json=payload)
-    if response.status_code == 204:
-        print("✅ Posted chunk to Discord.")
+    # send embed
+    payload = {"embeds": [embed]}
+    r = requests.post(DISCORD_WEBHOOK_URL, json=payload)
+    if r.status_code != 204:
+        print(f"Discord webhook error: {r.status_code} {r.text}")
     else:
-        print(f"❌ Discord post failed: {response.status_code} - {response.text}")
-
-# --- SPLIT AND POST ---
-chunks = [full_message[i:i+1900] for i in range(0, len(full_message), 1900)]
-for i, chunk in enumerate(chunks):
-    send_to_discord(chunk, mention_role=(i == 0))  # Only @ on first message
+        print("Embed sent ✅")
+else:
+    print("No Discord webhook URL configured. Here’s the report:\n")
+    print(header_message)
+    print("\n--- EMBED ---")
+    print(embed["title"])
+    print(embed["description"])
