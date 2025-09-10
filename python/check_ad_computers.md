@@ -1,4 +1,4 @@
-This script grabs a list of computer from a text file called computers.txt and check to see if they exist in Active Directory (AD) using DSQUERY. If the computer exists in AD it will return 'Ture, if it does not exist it returns 'False"
+This script grabs a list of computer from a text file called computers.txt and check to see if they exist in Active Directory (AD) using DSQUERY. If the computer exists in AD it will return 'Ture', if it does not exist it returns 'False'.
 ```python
 import subprocess
 import csv
