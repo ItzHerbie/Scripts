@@ -19,7 +19,7 @@ def post_to_discord(article):
               f"<{article['url']}>"
     resp = requests.post(WEBHOOK_URL, json={'content': content})
     if resp.status_code != 204:
-        print(f"❌ Discord error {resp.status_code}: {resp.text}")
+        print(f"Discord error {resp.status_code}: {resp.text}")
 
 def fetch_and_post():
     now   = datetime.datetime.now(datetime.timezone.utc)
@@ -44,7 +44,7 @@ def fetch_and_post():
         r = requests.get(url, params=params)
         r.raise_for_status()
     except requests.exceptions.RequestException as e:
-        print(f"❌ Error fetching articles: {e}")
+        print(f"Error fetching articles: {e}")
         return
 
     articles = r.json().get('articles', [])
@@ -53,7 +53,7 @@ def fetch_and_post():
     for art in articles:
         title_lower = art['title'].lower()
         if any(kw.lower() in title_lower for kw in KEYWORDS):
-            print(f"✅ Matched keyword in: {art['title']}")
+            print(f"Matched keyword in: {art['title']}")
             found.append(art)
 
     # dedupe by URL
